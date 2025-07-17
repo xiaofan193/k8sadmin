@@ -1,6 +1,7 @@
 package resouces
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/go-dev-frame/sponge/pkg/gin/middleware"
 	"github.com/go-dev-frame/sponge/pkg/gin/response"
@@ -71,12 +72,72 @@ func (h *resoucesHandler) CreateOrUpdatePod(c *gin.Context) {
 // @Tags pod
 // @Accept json
 // @Produce json
-// @Param namespace query types.CreateUserRequest true "pod information"
+// @Param namespace query types.GetPodListRequest true "请求参数"
+
 // @Success 200 {object} types.ListPodsReply{}
 // @Router /api/v1/k8s/{namespace} [get]
 // @Security BearerAuth
 func (h *resoucesHandler) GetPodList(c *gin.Context) {
-	response.Success(c, gin.H{})
+
+	reqParam := &types.GetPodListRequest{
+		Namespace: c.Param("namespace"),
+		Keyword:   c.Query("keyword"),
+		NodeName:  c.Query("nodeName"),
+	}
+	if reqParam.Namespace == "" {
+		reqParam.Namespace = "default"
+	}
+
+	podList, err := controller.NewPodController().GetPodList(c.Request.Context(), reqParam)
+	if err != nil {
+		logger.Error("GetPodList error", logger.Err(err), logger.Any("parmm", reqParam), middleware.GCtxRequestIDField(c))
+		response.Output(c, ecode.InternalServerError.ToHTTPCode())
+		return
+	}
+	res := types.ListPodsReply{
+		Data: struct {
+			PodList []*types.PodListItem `json:"podList"`
+		}{PodList: podList},
+	}
+	response.Success(c, res)
+}
+
+// GetPodDetail get a detail by namespace and name
+// @Summary Get a by namespace and name
+// @Description Gets detailed information of a user specified by the given id in the path.
+// @Tags user
+// @Param namespace path string true "namespace"
+// @Param name path string true "name"
+// @Accept json
+// @Produce json
+// @Success 200 {object} types.GetPodDetailReply{}
+// @Router /api/v1/k8s/pod/{namespace}/{name} [get]
+// @Security BearerAuth
+func (h *resoucesHandler) GetPodDetail(c *gin.Context) {
+
+	reqParam := &types.GetPodDetailRequest{
+		Namespace: c.Param("namespace"),
+		Name:      c.Query("name"),
+	}
+	if reqParam.Namespace == "" {
+		reqParam.Namespace = "default"
+	}
+
+	if reqParam.Name == "" {
+		response.Error(c, ecode.InvalidParams, fmt.Errorf("pod name 不能为空"))
+	}
+	detail, err := controller.NewPodController().GetPodDetail(c.Request.Context(), reqParam)
+	if err != nil {
+		logger.Error("GetPodDetail error", logger.Err(err), logger.Any("parmm", reqParam), middleware.GCtxRequestIDField(c))
+		response.Output(c, ecode.InternalServerError.ToHTTPCode())
+		return
+	}
+	res := types.GetPodDetailReply{
+		Data: struct {
+			Pod *types.Pod `json:"pod"`
+		}{Pod: detail},
+	}
+	response.Success(c, res)
 }
 
 // DeletePod delete a pod by name
@@ -104,20 +165,5 @@ func (h *resoucesHandler) DeletePod(c *gin.Context) {
 // @Router /api/v1/k8s/{namespace} [get]
 // @Security BearerAuth
 func (h *resoucesHandler) GetNamespaceList(c *gin.Context) {
-	response.Success(c, gin.H{})
-}
-
-// GetPodDetail get a detail by namespace and name
-// @Summary Get a by namespace and name
-// @Description Gets detailed information of a user specified by the given id in the path.
-// @Tags user
-// @Param namespace path string true "namespace"
-// @Param name path string true "name"
-// @Accept json
-// @Produce json
-// @Success 200 {object} types.GetPodDetailReply{}
-// @Router /api/v1/k8s/pod/{namespace}/{name} [get]
-// @Security BearerAuth
-func (h *resoucesHandler) GetPodDetail(c *gin.Context) {
 	response.Success(c, gin.H{})
 }

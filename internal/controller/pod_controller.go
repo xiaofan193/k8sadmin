@@ -22,6 +22,7 @@ var (
 
 type PodController struct {
 	KubeConfigSet *kubernetes.Clientset
+	CONF          Server
 }
 
 func NewPodController() *PodController {
@@ -130,4 +131,38 @@ func (p *PodController) CreateOrUpdatePod(ctx context.Context, podReq *types.Pod
 			}
 		}
 	}
+}
+
+func (p *PodController) GetPodList(ctx context.Context, reqParam *types.GetPodListRequest) ([]*types.PodListItem, error) {
+	list, err := p.KubeConfigSet.CoreV1().Pods(reqParam.Namespace).List(ctx, metav1.ListOptions{})
+
+	if err != nil {
+		return nil, err
+	}
+	podList := make([]*types.PodListItem, 0)
+	k8s2req := &pod.K8s2ReqConvert{}
+	for _, item := range list.Items {
+		if reqParam.NodeName != "" && item.Spec.NodeName != reqParam.NodeName {
+			continue
+		}
+		if strings.Contains(item.Name, reqParam.Keyword) {
+			podItem := k8s2req.PodK8s2ItemRes(item)
+			podList = append(podList, &podItem)
+		}
+	}
+	return podList, err
+}
+
+func (p *PodController) GetPodDetail(ctx context.Context, reqParam *types.GetPodDetailRequest) (*types.Pod, error) {
+	podApi := p.KubeConfigSet.CoreV1().Pods(reqParam.Namespace)
+	k8sGetPod, err := podApi.Get(ctx, reqParam.Name, metav1.GetOptions{})
+
+	if err != nil {
+		return nil, fmt.Errorf("Pod[namespace=%s,name=%s]查询失败，detail：%s", reqParam.Namespace, reqParam.Name, err.Error())
+	}
+
+	// 将k8s pod 转为  pod response
+	k8s2req := &pod.K8s2ReqConvert{}
+	podRes := k8s2req.PodK8s2Req(*k8sGetPod)
+	return &podRes, nil
 }

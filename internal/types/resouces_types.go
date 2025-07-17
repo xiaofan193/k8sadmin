@@ -45,15 +45,26 @@ type ListPodsReply struct {
 	Code int    `json:"code"` // return code
 	Msg  string `json:"msg"`  // return information description
 	Data struct {
-		Namespaces []Namespace `json:"namespaces"`
+		PodList []*PodListItem `json:"podList"`
 	} `json:"data"` // return data
 }
 type GetPodDetailReply struct {
 	Code int    `json:"code"` // return code
 	Msg  string `json:"msg"`  // return information description
 	Data struct {
-		Pod Pod `json:"pod"`
+		Pod *Pod `json:"pod"`
 	} `json:"data"` // return data
+}
+
+type GetPodListRequest struct {
+	Namespace string `json:"namespace"`
+	Keyword   string `json:"keyword"`
+	NodeName  string `json:"nodeName"`
+}
+
+type GetPodDetailRequest struct {
+	Namespace string `json:"namespace"`
+	Name      string `json:"name"`
 }
 
 // 以下是pod 的数据结构
