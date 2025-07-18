@@ -152,7 +152,24 @@ func (h *resoucesHandler) GetPodDetail(c *gin.Context) {
 // @Router /api/v1/k8s/{namespace}/{name} [delete]
 // @Security BearerAuth
 func (h *resoucesHandler) DeletePod(c *gin.Context) {
-	response.Success(c, gin.H{})
+
+	reqParam := &types.DeletedPodRequest{}
+	reqParam.Namespace = c.Param("namespace")
+	reqParam.Name = c.Param("name")
+	if reqParam.Namespace == "" {
+		response.Error(c, ecode.InvalidParams, fmt.Errorf("namespace  不能为空"))
+	}
+	if reqParam.Name == "" {
+		response.Error(c, ecode.InvalidParams, fmt.Errorf("pod name  不能为空"))
+	}
+
+	err := controller.NewPodController().DeletePod(c.Request.Context(), reqParam)
+	if err != nil {
+		logger.Error("DeletePod error", logger.Err(err), logger.Any("parmm", reqParam), middleware.GCtxRequestIDField(c))
+		response.Output(c, ecode.InternalServerError.ToHTTPCode())
+		return
+	}
+	response.Success(c)
 }
 
 // GetNamespaceList 获取namespace列表

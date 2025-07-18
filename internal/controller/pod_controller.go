@@ -166,3 +166,12 @@ func (p *PodController) GetPodDetail(ctx context.Context, reqParam *types.GetPod
 	podRes := k8s2req.PodK8s2Req(*k8sGetPod)
 	return &podRes, nil
 }
+
+func (p *PodController) DeletePod(ctx context.Context, reqParam *types.DeletedPodRequest) error {
+	background := metav1.DeletePropagationBackground
+	var gracePeriodSeconds int64 = 0
+	return p.KubeConfigSet.CoreV1().Pods(reqParam.Namespace).Delete(ctx, reqParam.Name, metav1.DeleteOptions{
+		GracePeriodSeconds: &gracePeriodSeconds,
+		PropagationPolicy:  &background,
+	})
+}
