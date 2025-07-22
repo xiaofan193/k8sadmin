@@ -1,5 +1,7 @@
 package types
 
+import corev1 "k8s.io/api/core/v1"
+
 type CreateOrUpdatePodReply struct {
 	Code int    `json:"code"` // return code
 	Msg  string `json:"msg"`  // return information description
@@ -66,4 +68,52 @@ type GetPodDetailRequest struct {
 type DeletedPodRequest struct {
 	Namespace string `json:"namespace"`
 	Name      string `json:"name"`
+}
+
+// node 请求列表请求
+type NodeListRequest struct {
+	KeyWord string `json:"keyWord"`
+}
+
+type NodeDetailRequest struct {
+	NodeName string `json:"nodeName"`
+}
+
+type GetNodeDetailReply struct {
+	Code int    `json:"code"` // return code
+	Msg  string `json:"msg"`  // return information description
+	Data struct {
+		Node *Node `json:"node"`
+	} `json:"data"` // return data
+}
+
+type ListNodeReply struct {
+	Code int    `json:"code"` // return code
+	Msg  string `json:"msg"`  // return information description
+	Data struct {
+		Nodes []*Node `json:"nodes"`
+	} `json:"data"` // return data
+}
+type UpdatedLabelRequest struct {
+	Name   string        `json:"name"`
+	Labels []ListMapItem `json:"labels"`
+}
+
+type UpdateNodeLabelReply struct {
+	Code int    `json:"code"` // return code
+	Msg  string `json:"msg"`  // return information description
+	Data struct {
+	} `json:"data"` // return data
+}
+
+type UpdatedTaintRequest struct {
+	Name   string         `json:"name"`
+	Taints []corev1.Taint `json:"taints"`
+}
+
+type UpdatedTaintReply struct {
+	Code int    `json:"code"` // return code
+	Msg  string `json:"msg"`  // return information description
+	Data struct {
+	} `json:"data"` // return data
 }

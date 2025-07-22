@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/xiaofan193/k8sadmin/internal/pkg/pod"
 	"github.com/xiaofan193/k8sadmin/internal/types"
+	"github.com/xiaofan193/k8sadmin/pkg/global"
 	corev1 "k8s.io/api/core/v1"
 	k8serror "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -28,7 +29,7 @@ type PodController struct {
 func NewPodController() *PodController {
 	podControllerOnce.Do(func() {
 		podInstance = &PodController{
-			KubeConfigSet: GlobalKubeConfigSet,
+			KubeConfigSet: global.GlobalKubeConfigSet,
 		}
 	})
 	return podInstance

@@ -1,9 +1,5 @@
 package controller
 
-import "k8s.io/client-go/kubernetes"
-
-var GlobalKubeConfigSet *kubernetes.Clientset
-
 type Harbor struct {
 	Enable   bool   `yaml:"enable" json:"enable"`
 	Username string `json:"username" yaml:"username"`

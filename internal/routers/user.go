@@ -7,7 +7,7 @@ import (
 )
 
 func init() {
-	apiV1RouterFns = append(apiV1RouterFns, func(group *gin.RouterGroup) {
+	ApiV1RouterFns = append(ApiV1RouterFns, func(group *gin.RouterGroup) {
 		userRouter(group, handler.NewUserHandler())
 	})
 }

@@ -63,7 +63,7 @@ func (h *resoucesHandler) CreateOrUpdatePod(c *gin.Context) {
 		return
 	}
 
-	response.Success(c, err)
+	response.Success(c)
 }
 
 // GetPodList 获取pod列表
