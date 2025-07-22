@@ -33,7 +33,7 @@ type ListNamespacesReply struct {
 	Code int    `json:"code"` // return code
 	Msg  string `json:"msg"`  // return information description
 	Data struct {
-		Namespaces []Namespace `json:"namespaces"`
+		Namespaces []*Namespace `json:"namespaces"`
 	} `json:"data"` // return data
 }
 

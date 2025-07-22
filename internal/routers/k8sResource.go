@@ -21,10 +21,9 @@ func kubernetsResoucesRouter(group *gin.RouterGroup, h resouces.ResoucesHandler)
 	// If jwt authentication is not required for all routes, authentication middleware can be added
 	// separately for only certain routes. In this case, g.Use(middleware.Auth()) above should not be used.
 
-	g.POST("/pod", h.CreateOrUpdatePod)                 // [post] /api/v1/k8s/:namespace
-	g.GET("/pod/:namespace", h.GetPodList)              // [get] /api/v1/k8s/pod/:namespace
-	g.GET("/pod/:namespace/:name", h.GetPodDetail)      // [get] /api/v1/k8s/pod/:namespace
-	g.DELETE("/pod/:namespace/:name", h.DeletePod)      // [delete] /api/v1/k8s/pod/:namepace/:name
-	g.POST("/namespace", h.GetNamespaceList)            // [post] /api/v1/k8s/namespae
-	g.POST("/pod/:namespace/:name", h.GetNamespaceList) // [get] /api/v1/k8s/pod/:namespace/:name
+	g.POST("/pod", h.CreateOrUpdatePod)            // [post] /api/v1/k8s/pod
+	g.GET("/pod/:namespace", h.GetPodList)         // [get] /api/v1/k8s/pod/:namespace
+	g.GET("/pod/:namespace/:name", h.GetPodDetail) // [get] /api/v1/k8s/pod/:namespace
+	g.DELETE("/pod/:namespace/:name", h.DeletePod) // [delete] /api/v1/k8s/pod/:namepace/:name
+	g.GET("/namespace", h.GetNamespaceList)        // [post] /api/v1/k8s/namespace
 }

@@ -18,6 +18,7 @@ import (
 // @description Type Bearer your-jwt-token to Value
 func main() {
 	initial.InitApp()
+	initial.InitKubeConfigSet()
 	services := initial.CreateServices()
 	closes := initial.Close(services)
 

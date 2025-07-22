@@ -28,7 +28,7 @@ type PodController struct {
 func NewPodController() *PodController {
 	podControllerOnce.Do(func() {
 		podInstance = &PodController{
-			KubeConfigSet: &kubernetes.Clientset{},
+			KubeConfigSet: GlobalKubeConfigSet,
 		}
 	})
 	return podInstance
@@ -67,7 +67,7 @@ func (p *PodController) CreateOrUpdatePod(ctx context.Context, podReq *types.Pod
 	var labelSelector []string
 
 	for k, v := range k8sGetPod.Labels {
-		labelSelector = append(labelSelector, fmt.Sprintf("%=%s", k, v))
+		labelSelector = append(labelSelector, fmt.Sprintf("%s=%s", k, v))
 	}
 
 	// label 的格式 app=test,app2=test2
@@ -174,4 +174,22 @@ func (p *PodController) DeletePod(ctx context.Context, reqParam *types.DeletedPo
 		GracePeriodSeconds: &gracePeriodSeconds,
 		PropagationPolicy:  &background,
 	})
+}
+
+func (p *PodController) GetNamespaceList(ctx context.Context) ([]*types.Namespace, error) {
+	list, err := p.KubeConfigSet.CoreV1().Namespaces().List(ctx, metav1.ListOptions{})
+
+	if err != nil {
+		return nil, err
+	}
+
+	namespaceList := make([]*types.Namespace, 0)
+	for _, item := range list.Items {
+		namespaceList = append(namespaceList, &types.Namespace{
+			Name:              item.Name,
+			CreationTimestamp: item.CreationTimestamp.Unix(),
+			Status:            string(item.Status.Phase),
+		})
+	}
+	return namespaceList, nil
 }

@@ -59,11 +59,11 @@ func (h *resoucesHandler) CreateOrUpdatePod(c *gin.Context) {
 	msg, err := controller.NewPodController().CreateOrUpdatePod(ctxg, podReq)
 	if err != nil {
 		logger.Error("Create error", logger.Err(err), logger.Any("podReq", podReq), logger.String("msg", msg), middleware.GCtxRequestIDField(c))
-		response.Output(c, ecode.InternalServerError.ToHTTPCode())
+		response.Output(c, ecode.InternalServerError.ToHTTPCode(), err)
 		return
 	}
 
-	response.Success(c)
+	response.Success(c, err)
 }
 
 // GetPodList 获取pod列表
@@ -117,7 +117,7 @@ func (h *resoucesHandler) GetPodDetail(c *gin.Context) {
 
 	reqParam := &types.GetPodDetailRequest{
 		Namespace: c.Param("namespace"),
-		Name:      c.Query("name"),
+		Name:      c.Param("name"),
 	}
 	if reqParam.Namespace == "" {
 		reqParam.Namespace = "default"
@@ -166,7 +166,7 @@ func (h *resoucesHandler) DeletePod(c *gin.Context) {
 	err := controller.NewPodController().DeletePod(c.Request.Context(), reqParam)
 	if err != nil {
 		logger.Error("DeletePod error", logger.Err(err), logger.Any("parmm", reqParam), middleware.GCtxRequestIDField(c))
-		response.Output(c, ecode.InternalServerError.ToHTTPCode())
+		response.Output(c, ecode.InternalServerError.ToHTTPCode(), err)
 		return
 	}
 	response.Success(c)
@@ -179,8 +179,21 @@ func (h *resoucesHandler) DeletePod(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Success 200 {object} types.ListNamespacesReply{}
-// @Router /api/v1/k8s/{namespace} [get]
+// @Router /api/v1/k8s/namespace [get]
 // @Security BearerAuth
 func (h *resoucesHandler) GetNamespaceList(c *gin.Context) {
-	response.Success(c, gin.H{})
+	namespaceList, err := controller.NewPodController().GetNamespaceList(c.Request.Context())
+
+	if err != nil {
+		logger.Error("GetNamespaceList error", logger.Err(err), logger.Any("parmm", ""), middleware.GCtxRequestIDField(c))
+		response.Output(c, ecode.InternalServerError.ToHTTPCode(), err)
+		return
+	}
+
+	res := types.ListNamespacesReply{
+		Data: struct {
+			Namespaces []*types.Namespace `json:"namespaces"`
+		}{Namespaces: namespaceList},
+	}
+	response.Success(c, res)
 }
