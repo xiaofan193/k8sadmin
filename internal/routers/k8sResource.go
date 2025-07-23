@@ -33,4 +33,11 @@ func kubernetsResoucesRouter(group *gin.RouterGroup) {
 	g.GET("/node/:name", nh.GetNodeDetail)   // [get] /api/v1/k8s/node/:name
 	g.PUT("/node/label", nh.UpdateNodeLabel) // [put] /api/v1/k8s/node/label
 	g.PUT("/node/taint", nh.UpdateNodeTaint) // [put] /api/v1/k8s/node/taint
+
+	// ConfigMap
+	cm := resouces.NewConfigMapHandler()
+	g.POST("/configmap", cm.CreateOrUpdateConfigMap)            // [post] /api/v1/k8s/configmap
+	g.GET("/configmap/:namespace", cm.GetConfigMapList)         // [get] /api/v1/k8s/configmap/:namespace
+	g.GET("/configmap/:namespace/:name", cm.GetConfigMapDetail) // [get] /api/v1/k8s/configmap/:namespace/:name
+	g.DELETE("/configmap/:namespace/:name", cm.DeleteConfigMap) // [delete] /api/v1/k8s/configmap/:namespace/:name
 }
