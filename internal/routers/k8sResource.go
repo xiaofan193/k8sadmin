@@ -40,4 +40,13 @@ func kubernetsResoucesRouter(group *gin.RouterGroup) {
 	g.GET("/configmap/:namespace", cm.GetConfigMapList)         // [get] /api/v1/k8s/configmap/:namespace
 	g.GET("/configmap/:namespace/:name", cm.GetConfigMapDetail) // [get] /api/v1/k8s/configmap/:namespace/:name
 	g.DELETE("/configmap/:namespace/:name", cm.DeleteConfigMap) // [delete] /api/v1/k8s/configmap/:namespace/:name
+
+	//  Secret
+	sh := resouces.NewSecretHandler()
+	g.POST("/secret", sh.CreateOrUpdateSecret)            // [post] /api/v1/k8s/secret
+	g.GET("/secret/:namespace", sh.GetSecretList)         // [get] /api/v1/k8s/secret/:namespace
+	g.GET("/secret/:namespace/:name", sh.GetSecretDetail) // [get] /api/v1/k8s/secret/:namespace/:name
+	g.DELETE("/secret/:namespace/:name", sh.DeleteSecret) // [delete] /api/v1/k8s/secret/:namespace/:name
+	// Service
+
 }

@@ -100,7 +100,7 @@ func (h *configMapHandler) GetConfigMapDetail(c *gin.Context) {
 func (h *configMapHandler) GetConfigMapList(c *gin.Context) {
 	reqparam := &types.GetConfigMapDetailORListRequest{}
 	reqparam.Namespace = c.Param("namespace")
-	reqparam.Namespace = c.Query("keyword")
+	reqparam.Keyword = c.Query("keyword")
 
 	if reqparam.Namespace == "" {
 		response.Error(c, ecode.InvalidParams, "namespace  不能为空")
@@ -115,16 +115,16 @@ func (h *configMapHandler) GetConfigMapList(c *gin.Context) {
 	response.Success(c, cmList)
 }
 
-// GetConfigMapList 获取configMap的列表
-// @Summary GetConfigMapList 获取configMap的详情
-// @Description 获取configMap的详情
+// DeleteConfigMap 删除configMap
+// @Summary DeleteConfigMap 删除configMap
+// @Description 删除configMap
 // @Tags configMap
 // @Accept json
 // @Produce json
 // @Param namespace query string struct true "namespace"
 // @Param name query string struct true "name"
 // @Success 200 {object} types.CreateOrUpdateConfigMapReply{}
-// @Router /api/v1/k8s/configmap/:namespace/:name
+// @Router /api/v1/k8s/configmap/:namespace/:name  [delete]
 // @Security BearerAuth
 func (h *configMapHandler) DeleteConfigMap(c *gin.Context) {
 	reqParam := &types.DeleteConfigMapRequest{}
