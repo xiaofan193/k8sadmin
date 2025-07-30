@@ -20,7 +20,7 @@ var (
 
 type NodeController struct {
 	KubeConfigSet *kubernetes.Clientset
-	CONF          Server
+	CONF          global.Server
 }
 
 func NewNodeController() *NodeController {

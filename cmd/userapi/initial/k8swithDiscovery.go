@@ -1,7 +1,9 @@
 package initial
 
 import (
+	"github.com/go-dev-frame/sponge/pkg/conf"
 	"github.com/go-dev-frame/sponge/pkg/logger"
+	"github.com/xiaofan193/k8sadmin/configs"
 	"github.com/xiaofan193/k8sadmin/pkg/global"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
@@ -19,4 +21,14 @@ func InitKubeConfigSet() {
 	}
 	global.GlobalKubeConfigSet = clientset
 	logger.Info("[k8sconfig statistics] was initialized")
+}
+
+func GetConfigK8sFromLocal() {
+	config := configs.Path("config.yml")
+
+	err := conf.Parse(config, &global.CONF)
+
+	if err != nil {
+		panic(err.Error())
+	}
 }

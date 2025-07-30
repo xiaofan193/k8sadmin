@@ -19,7 +19,7 @@ var (
 
 type SecreteController struct {
 	KubeConfigSet *kubernetes.Clientset
-	CONF          Server
+	CONF          global.Server
 }
 
 func NewSecreteController() *SecreteController {
@@ -75,7 +75,7 @@ func (s *SecreteController) GetSecretDetail(ctx context.Context, namespace strin
 		return nil, err
 	}
 	secretConvert := &secrete.K8s2Res{}
-	secretRes := secretConvert.SecretK8s2ResItemConvert(*secretK8s)
+	secretRes := secretConvert.SecretK8s2ResDetailConvert(*secretK8s)
 	return secretRes, err
 }
 

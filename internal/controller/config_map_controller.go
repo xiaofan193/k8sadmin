@@ -18,7 +18,7 @@ var (
 
 type ConfigMapController struct {
 	KubeConfigSet *kubernetes.Clientset
-	CONF          Server
+	CONF          global.Server
 }
 
 func NewConfigMapController() *ConfigMapController {

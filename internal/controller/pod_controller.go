@@ -23,7 +23,7 @@ var (
 
 type PodController struct {
 	KubeConfigSet *kubernetes.Clientset
-	CONF          Server
+	CONF          global.Server
 }
 
 func NewPodController() *PodController {

@@ -1,4 +1,4 @@
-package controller
+package global
 
 type Harbor struct {
 	Enable   bool   `yaml:"enable" json:"enable"`

@@ -19,6 +19,8 @@ import (
 func main() {
 	initial.InitApp()
 	initial.InitKubeConfigSet()
+	initial.GetConfigK8sFromLocal()
+
 	services := initial.CreateServices()
 	closes := initial.Close(services)
 

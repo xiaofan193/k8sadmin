@@ -47,6 +47,18 @@ func kubernetsResoucesRouter(group *gin.RouterGroup) {
 	g.GET("/secret/:namespace", sh.GetSecretList)         // [get] /api/v1/k8s/secret/:namespace
 	g.GET("/secret/:namespace/:name", sh.GetSecretDetail) // [get] /api/v1/k8s/secret/:namespace/:name
 	g.DELETE("/secret/:namespace/:name", sh.DeleteSecret) // [delete] /api/v1/k8s/secret/:namespace/:name
-	// Service
+	// pv
+	pv := resouces.NewPvHandler()
+	g.POST("/pv", pv.CreatePv)         // [post] /api/v1/k8s/pv
+	g.GET("/pv/list", pv.GetPvList)    // [post] /api/v1/k8s/pv/list
+	g.DELETE("/pv/:name", pv.DeletePV) // [post] /api/v1/k8s/pv/:name
+	// pvc
+	g.POST("pvc", pv.CreatePVC)                     // [post] /api/v1/k8s/pvc
+	g.GET("/pvc/:namespace", pv.GetPVCList)         // [get] /api/v1/k8s/pvc/:namespace
+	g.DELETE("/pvc/:namespace/:name", pv.DeletePVC) // [post] /api/v1/k8s/pvc/:namespace/:name
 
+	// StorageClass
+	g.POST("/sc", pv.CreateSC)         // [post] /api/v1/k8s/sc
+	g.GET("/sc/list", pv.GetSCList)    // [get] /api/v1/k8s/sc/list
+	g.DELETE("/sc/:name", pv.DeleteSC) // [delete] /api/v1/k8s/sc/:name
 }

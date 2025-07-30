@@ -1,0 +1,13 @@
+system:
+  addr: ":8082"
+  provisioner: "cluster.local/nfs-subdir-external-provisioner"
+  harbor:
+    enable: true
+    host: "harbor.kubeimooc.com"
+    scheme: "https"
+    username: "admin"
+    password: "123"
+  prometheus:
+    enable: true
+    host: "192.168.1.16:30090"
+    scheme: "http"
