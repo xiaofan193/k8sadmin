@@ -65,3 +65,62 @@ func (s *RbacpController) CreateServiceAccount(ctx context.Context, reqParam *rb
 func (s *RbacpController) DeleteServiceAccount(ctx context.Context, namespace string, name string) error {
 	return s.KubeConfigSet.CoreV1().ServiceAccounts(namespace).Delete(ctx, name, metav1.DeleteOptions{})
 }
+
+func (s *RbacpController) GetRoleDetail(ctx context.Context, namespace string, name string) (*rbac.RoleRes, error) {
+	resRole := &rbac.RoleRes{}
+	// Role
+	if namespace != "" {
+		roleK8s, err := s.KubeConfigSet.RbacV1().Roles(namespace).Get(ctx, name, metav1.GetOptions{})
+
+		if err != nil {
+			return nil, err
+		}
+		resRole.Name = roleK8s.Name
+		resRole.Namespace = roleK8s.Namespace
+		resRole.Labels = maputils.ToList(roleK8s.Labels)
+		resRole.Rules = roleK8s.Rules
+
+	} else {
+		roleK8s, err := s.KubeConfigSet.RbacV1().ClusterRoles().Get(ctx, name, metav1.GetOptions{})
+		if err != nil {
+			return nil, err
+		}
+		resRole.Name = roleK8s.Name
+		resRole.Namespace = roleK8s.Namespace
+		resRole.Labels = maputils.ToList(roleK8s.Labels)
+		resRole.Rules = roleK8s.Rules
+	}
+	return resRole, nil
+	// ClusterRoles
+}
+
+func (s *RbacpController) GetRoleList(ctx context.Context, namespace string) ([]*rbac.Role, error) {
+	resRoleList := make([]*rbac.Role, 0)
+	if namespace != "" {
+		roleK8sList, err := s.KubeConfigSet.RbacV1().Roles(namespace).List(ctx, metav1.ListOptions{})
+		if err != nil {
+			return resRoleList, err
+		}
+		for _, item := range roleK8sList.Items {
+			resRoleList = append(resRoleList, &rbac.Role{
+				Name:      item.Name,
+				Namespace: item.Namespace,
+				Age:       item.CreationTimestamp.Unix(),
+			})
+		}
+
+	} else {
+		roleK8sList, err := s.KubeConfigSet.RbacV1().ClusterRoles().List(ctx, metav1.ListOptions{})
+		if err != nil {
+			return resRoleList, err
+		}
+		for _, item := range roleK8sList.Items {
+			resRoleList = append(resRoleList, &rbac.Role{
+				Name:      item.Name,
+				Namespace: item.Namespace,
+				Age:       item.CreationTimestamp.Unix(),
+			})
+		}
+	}
+	return resRoleList, nil
+}

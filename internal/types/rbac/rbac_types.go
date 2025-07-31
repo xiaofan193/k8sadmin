@@ -1,6 +1,7 @@
 package rbac
 
 import "github.com/xiaofan193/k8sadmin/internal/types"
+import rbacv1 "k8s.io/api/rbac/v1"
 
 type ServiceAccount struct {
 	Name      string `json:"name"`
@@ -32,4 +33,27 @@ type ServiceAccountRequest struct {
 	Name      string              `json:"name"`
 	Namespace string              `json:"namespace"`
 	Labels    []types.ListMapItem `json:"labels"`
+}
+
+type RoleDetailReply struct {
+	Code int    `json:"code"` // return code
+	Msg  string `json:"msg"`  // return information description
+	Data struct {
+		Role *RoleRes
+	} `json:"data"` // return data
+}
+
+type RoleRes struct {
+	Name      string              `json:"name"`
+	Namespace string              `json:"namespace"`
+	Labels    []types.ListMapItem `json:"labels"`
+	Rules     []rbacv1.PolicyRule `json:"rules"`
+}
+
+type RoleResListReply struct {
+	Code int    `json:"code"` // return code
+	Msg  string `json:"msg"`  // return information description
+	Data struct {
+		List []*Role
+	} `json:"data"` // return data
 }

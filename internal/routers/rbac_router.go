@@ -11,4 +11,13 @@ func initRBACRouter(g *gin.RouterGroup) {
 	g.GET("/sa/:namespace", rbac.GetServiceAccountList)         //   [get] /api/v1/k8s/sa/:namespace
 	g.POST("/sa", rbac.CreateServiceAccount)                    // [post]     /api/v1/k8s/sa
 	g.DELETE("/sa/:name/:namespace", rbac.DeleteServiceAccount) // [delete] /api/v1/k8s/sa/:name/:namespace
+	// 角色管理
+	g.GET("/role/name:", rbac.GetRoleDetail) //   [get] /api/v1/k8s/role/:name
+	g.GET("/roles", rbac.GetRoleList)        //   [get] /api/v1/k8s/roles
+	//g.POST("/role", rbac.CreateRole)         // [post]     /api/v1/k8s/role
+
+	// 角色绑定
+	//g.GET("/role/binding", rbac.CreateRoleBinding)           // [get]     /api/v1/k8s/role/binding
+	//g.DELETE("/role/binding", rbac.DeleteRoleBingding)       // [delete] /api/v1/k8s/role/binding
+	//g.POST("/role/binding", rbac.CreateOrUpdateRoleBingding) // [post]     /api/v1/k8s/role/binding
 }

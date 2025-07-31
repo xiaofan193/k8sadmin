@@ -14,6 +14,8 @@ type RBACHandler interface {
 	GetServiceAccountList(c *gin.Context)
 	CreateServiceAccount(c *gin.Context)
 	DeleteServiceAccount(c *gin.Context)
+	GetRoleDetail(c *gin.Context)
+	GetRoleList(c *gin.Context)
 }
 type rbacHander struct {
 }
@@ -108,4 +110,62 @@ func (h *rbacHander) DeleteServiceAccount(c *gin.Context) {
 	}
 
 	response.Success(c)
+}
+
+// GetRoleDetail role详情
+// @Summary GetRoleDetail role详情
+// @Description  GetRoleDetail role详情
+// @Tags rbac
+// @Accept json
+// @Produce json
+// @Param name query string   true "name"
+// @Param namespace query string   true "命名空间"
+// @Success 200 {object} rbac.RoleDetailReply struct
+// @Router /api/v1/k8s/role/{name} [get]
+// @Security BearerAuth
+func (h *rbacHander) GetRoleDetail(c *gin.Context) {
+	namespace := c.Param("namespace")
+	name := c.Param("name")
+
+	if name == "" {
+		response.Error(c, ecode.InvalidParams, "name 不能为空")
+		return
+	}
+	rbacDetail, err := controller.NewRbacController().GetRoleDetail(c.Request.Context(), namespace, name)
+
+	if err != nil {
+		logger.Error("GetRoleDetail error: ", logger.Err(err), middleware.GCtxRequestIDField(c))
+		response.Output(c, ecode.InternalServerError.ToHTTPCode(), err)
+		return
+	}
+	resRabc := rbac.RoleDetailReply{
+		Data: struct{ Role *rbac.RoleRes }{Role: rbacDetail},
+	}
+	response.Success(c, resRabc)
+}
+
+// GetRoleList 获取serverAccount的列表
+// @Summary GetRoleList 获取serverAccount的列表
+// @Description 获取serverAccount的列表
+// @Tags rbac
+// @Accept json
+// @Produce json
+// @Param namespace query string struct true "namespace"
+// @Param name query string struct true "name"
+// @Success 200 {object} rbac.RoleResListReply
+// @Router /api/v1/k8s/roles
+// @Security BearerAuth
+func (h *rbacHander) GetRoleList(c *gin.Context) {
+	namespace := c.Param("namespace")
+	roleList, err := controller.NewRbacController().GetRoleList(c.Request.Context(), namespace)
+
+	if err != nil {
+		logger.Error("GetRoleDetail error: ", logger.Err(err), middleware.GCtxRequestIDField(c))
+		response.Output(c, ecode.InternalServerError.ToHTTPCode(), err)
+		return
+	}
+	roleResList := rbac.RoleResListReply{
+		Data: struct{ List []*rbac.Role }{List: roleList},
+	}
+	response.Success(c, roleResList)
 }
