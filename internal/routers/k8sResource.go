@@ -61,4 +61,7 @@ func kubernetsResoucesRouter(group *gin.RouterGroup) {
 	g.POST("/sc", pv.CreateSC)         // [post] /api/v1/k8s/sc
 	g.GET("/sc/list", pv.GetSCList)    // [get] /api/v1/k8s/sc/list
 	g.DELETE("/sc/:name", pv.DeleteSC) // [delete] /api/v1/k8s/sc/:name
+
+	initRBACRouter(g)
+
 }
