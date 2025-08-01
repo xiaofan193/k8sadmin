@@ -16,6 +16,8 @@ type RBACHandler interface {
 	DeleteServiceAccount(c *gin.Context)
 	GetRoleDetail(c *gin.Context)
 	GetRoleList(c *gin.Context)
+	CreateOrUpdateRole(c *gin.Context)
+	CreateOrUpdateRobing(c *gin.Context)
 }
 type rbacHander struct {
 }
@@ -168,4 +170,45 @@ func (h *rbacHander) GetRoleList(c *gin.Context) {
 		Data: struct{ List []*rbac.Role }{List: roleList},
 	}
 	response.Success(c, roleResList)
+}
+
+func (h *rbacHander) CreateOrUpdateRole(c *gin.Context) {
+	reqParam := &rbac.RoleRequest{}
+	err := c.ShouldBind(reqParam)
+
+	if err != nil {
+		logger.Error("GetRoleDetail error: ", logger.Err(err), middleware.GCtxRequestIDField(c))
+		response.Output(c, ecode.InternalServerError.ToHTTPCode(), err)
+		return
+	}
+
+	err = controller.NewRbacController().CreateOrUpdateRole(c.Request.Context(), reqParam)
+
+	if err != nil {
+		logger.Error("DeleteServiceAccount error: ", logger.Err(err), middleware.GCtxRequestIDField(c))
+		response.Output(c, ecode.InternalServerError.ToHTTPCode(), err)
+		return
+	}
+
+	response.Success(c)
+}
+
+func (h *rbacHander) CreateRoleBinding(c *gin.Context) {
+	reqParam := &rbac.RoleBindingRequest{}
+	err := c.ShouldBind(reqParam)
+
+	if err != nil {
+		logger.Error("CreateRoleBinding error: ", logger.Err(err), middleware.GCtxRequestIDField(c))
+		response.Output(c, ecode.InternalServerError.ToHTTPCode(), err)
+		return
+	}
+	err = controller.NewRbacController().CreateOrUpdateRolebing(c.Request.Context(), reqParam)
+
+	if err != nil {
+		logger.Error("CreateRoleBinding error: ", logger.Err(err), middleware.GCtxRequestIDField(c))
+		response.Output(c, ecode.InternalServerError.ToHTTPCode(), err)
+		return
+	}
+
+	response.Success(c)
 }

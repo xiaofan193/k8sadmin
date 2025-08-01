@@ -57,3 +57,20 @@ type RoleResListReply struct {
 		List []*Role
 	} `json:"data"` // return data
 }
+
+type RoleRequest struct {
+	Name      string              `json:"name"`
+	Namespace string              `json:"namespace"`
+	Labels    []types.ListMapItem `json:"labels"`
+	Rules     []rbacv1.PolicyRule `json:"rules"`
+}
+
+type RoleBindingRequest struct {
+	Name      string              `json:"name"`
+	Namespace string              `json:"namespace"`
+	Labels    []types.ListMapItem `json:"labels"`
+	//账号
+	Subjects []ServiceAccount `json:"subjects"`
+	//角色
+	RoleRef string `json:"roleRef"`
+}
