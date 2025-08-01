@@ -74,3 +74,14 @@ type RoleBindingRequest struct {
 	//角色
 	RoleRef string `json:"roleRef"`
 }
+
+type RoleBindingRes struct {
+	Name      string              `json:"name"`
+	Namespace string              `json:"namespace"`
+	Labels    []types.ListMapItem `json:"labels"`
+	//账号
+	Subjects []ServiceAccount `json:"subjects"`
+	//角色
+	RoleRef string `json:"roleRef"`
+	Age     int64  `json:"age"`
+}

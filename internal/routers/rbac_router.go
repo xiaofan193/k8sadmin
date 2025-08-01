@@ -17,7 +17,8 @@ func initRBACRouter(g *gin.RouterGroup) {
 	g.POST("/role", rbac.CreateOrUpdateRole) // [post]     /api/v1/k8s/role
 
 	// 角色绑定
-	g.POST("/role/binding", rbac.CreateOrUpdateRobing) // [post]     /api/v1/k8s/role/binding
-	//g.DELETE("/role/binding", rbac.DeleteRoleBingding)       // [delete] /api/v1/k8s/role/binding
-	//g.POST("/role/binding", rbac.CreateOrUpdateRoleBingding) // [post]     /api/v1/k8s/role/binding
+	g.POST("/role/binding", rbac.CreateOrUpdateRole)    // [post]     /api/v1/k8s/role/binding
+	g.DELETE("/role/binding", rbac.DeleteRoleBingding)  // [delete] /api/v1/k8s/role/binding
+	g.GET("/role/binding/:name", rbac.GetRolbingDetail) // [get]     /api/v1/k8s/role/binding/:name
+	g.GET("/role/binding", rbac.GetRolbingList)         // [get]     /api/v1/k8s/role/binding
 }

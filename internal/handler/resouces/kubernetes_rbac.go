@@ -17,7 +17,9 @@ type RBACHandler interface {
 	GetRoleDetail(c *gin.Context)
 	GetRoleList(c *gin.Context)
 	CreateOrUpdateRole(c *gin.Context)
-	CreateOrUpdateRobing(c *gin.Context)
+	DeleteRoleBingding(c *gin.Context)
+	GetRolbingDetail(c *gin.Context)
+	GetRolbingList(c *gin.Context)
 }
 type rbacHander struct {
 }
@@ -193,22 +195,47 @@ func (h *rbacHander) CreateOrUpdateRole(c *gin.Context) {
 	response.Success(c)
 }
 
-func (h *rbacHander) CreateRoleBinding(c *gin.Context) {
-	reqParam := &rbac.RoleBindingRequest{}
-	err := c.ShouldBind(reqParam)
+func (h *rbacHander) DeleteRoleBingding(c *gin.Context) {
+	namespace := c.Query("namespace")
+	name := c.Query("name")
 
-	if err != nil {
-		logger.Error("CreateRoleBinding error: ", logger.Err(err), middleware.GCtxRequestIDField(c))
-		response.Output(c, ecode.InternalServerError.ToHTTPCode(), err)
+	if name == "" {
+		response.Error(c, ecode.InvalidParams, "name 不能为空")
 		return
 	}
-	err = controller.NewRbacController().CreateOrUpdateRolebing(c.Request.Context(), reqParam)
+	err := controller.NewRbacController().DeleteRoleBindgs(c.Request.Context(), namespace, name)
 
 	if err != nil {
-		logger.Error("CreateRoleBinding error: ", logger.Err(err), middleware.GCtxRequestIDField(c))
+		logger.Error("DeleteRoleBingding error: ", logger.Err(err), middleware.GCtxRequestIDField(c))
 		response.Output(c, ecode.InternalServerError.ToHTTPCode(), err)
 		return
 	}
 
 	response.Success(c)
+}
+
+func (h *rbacHander) GetRolbingDetail(c *gin.Context) {
+	namespace := c.Param("namespace")
+	name := c.Query("name")
+
+	rb, err := controller.NewRbacController().GetRbDetail(c.Request.Context(), namespace, name)
+	if err != nil {
+		logger.Error("DeleteRoleBingding error: ", logger.Err(err), middleware.GCtxRequestIDField(c))
+		response.Output(c, ecode.InternalServerError.ToHTTPCode(), err)
+		return
+	}
+	response.Success(c, rb)
+}
+
+func (h *rbacHander) GetRolbingList(c *gin.Context) {
+	namespace := c.Param("namespace")
+	name := c.Query("name")
+
+	rb, err := controller.NewRbacController().GetRbList(c.Request.Context(), namespace, name)
+	if err != nil {
+		logger.Error("GetRolbingList error: ", logger.Err(err), middleware.GCtxRequestIDField(c))
+		response.Output(c, ecode.InternalServerError.ToHTTPCode(), err)
+		return
+	}
+	response.Success(c, rb)
 }

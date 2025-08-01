@@ -180,6 +180,101 @@ func (s *RbacpController) CreateOrUpdateRole(ctx context.Context, reqParam *rbac
 	return nil
 }
 
-func (s *RbacpController) CreateOrUpdateRolebing(ctx context.Context, reqParam *rbac.RoleBindingRequest) {
+func (s *RbacpController) DeleteRoleBindgs(ctx context.Context, namespace string, name string) error {
+	if namespace != "" {
+		err := s.KubeConfigSet.RbacV1().RoleBindings(namespace).Delete(ctx, name, metav1.DeleteOptions{})
+		if err != nil {
+			return err
+		}
+	} else {
+		err := s.KubeConfigSet.RbacV1().ClusterRoleBindings().Delete(ctx, name, metav1.DeleteOptions{})
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
 
+func (s *RbacpController) GetRbDetail(ctx context.Context, namespace string, name string) (*rbac.RoleBindingRes, error) {
+	rbRes := &rbac.RoleBindingRes{}
+	if namespace != "" {
+		rbK8s, err := s.KubeConfigSet.RbacV1().RoleBindings(namespace).
+			Get(ctx, name, metav1.GetOptions{})
+		if err != nil {
+			return rbRes, err
+		}
+		rbRes.Name = rbK8s.Name
+		rbRes.Namespace = rbK8s.Namespace
+		rbRes.Labels = maputils.ToList(rbK8s.Labels)
+		rbRes.RoleRef = rbK8s.RoleRef.Name
+		rbRes.Subjects = func(subjects []rbacv1.Subject) []rbac.ServiceAccount {
+			saList := make([]rbac.ServiceAccount, len(subjects))
+			for i, subject := range subjects {
+				saList[i] = rbac.ServiceAccount{
+					Name:      subject.Name,
+					Namespace: subject.Namespace,
+				}
+			}
+			return saList
+		}(rbK8s.Subjects)
+	} else {
+		rbK8s, err := s.KubeConfigSet.RbacV1().ClusterRoleBindings().
+			Get(ctx, name, metav1.GetOptions{})
+		if err != nil {
+			return rbRes, err
+		}
+		rbRes.Name = rbK8s.Name
+		rbRes.Namespace = rbK8s.Namespace
+		rbRes.Labels = maputils.ToList(rbK8s.Labels)
+		rbRes.RoleRef = rbK8s.RoleRef.Name
+		rbRes.Subjects = func(subjects []rbacv1.Subject) []rbac.ServiceAccount {
+			saList := make([]rbac.ServiceAccount, len(subjects))
+			for i, subject := range subjects {
+				saList[i] = rbac.ServiceAccount{
+					Name:      subject.Name,
+					Namespace: subject.Namespace,
+				}
+			}
+			return saList
+		}(rbK8s.Subjects)
+	}
+	return rbRes, nil
+}
+
+func (s *RbacpController) GetRbList(ctx context.Context, namespace string, name string) ([]*rbac.RoleBindingRes, error) {
+	rbResList := make([]*rbac.RoleBindingRes, 0)
+	if namespace != "" {
+		list, err := s.KubeConfigSet.RbacV1().RoleBindings(namespace).
+			List(ctx, metav1.ListOptions{})
+		if err != nil {
+			return rbResList, err
+		}
+		for _, item := range list.Items {
+			//if !strings.Contains(item.Name, keyword) {
+			//	continue
+			//}
+			rbResList = append(rbResList, &rbac.RoleBindingRes{
+				Name:      item.Name,
+				Namespace: item.Namespace,
+				Age:       item.CreationTimestamp.Unix(),
+			})
+		}
+	} else {
+		list, err := s.KubeConfigSet.RbacV1().ClusterRoleBindings().
+			List(ctx, metav1.ListOptions{})
+		if err != nil {
+			return rbResList, err
+		}
+		for _, item := range list.Items {
+			//if !strings.Contains(item.Name, keyword) {
+			//	continue
+			//}
+			rbResList = append(rbResList, &rbac.RoleBindingRes{
+				Name:      item.Name,
+				Namespace: item.Namespace,
+				Age:       item.CreationTimestamp.Unix(),
+			})
+		}
+	}
+	return rbResList, nil
 }
