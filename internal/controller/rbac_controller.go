@@ -179,7 +179,6 @@ func (s *RbacpController) CreateOrUpdateRole(ctx context.Context, reqParam *rbac
 	}
 	return nil
 }
-
 func (s *RbacpController) DeleteRoleBindgs(ctx context.Context, namespace string, name string) error {
 	if namespace != "" {
 		err := s.KubeConfigSet.RbacV1().RoleBindings(namespace).Delete(ctx, name, metav1.DeleteOptions{})
@@ -277,4 +276,87 @@ func (s *RbacpController) GetRbList(ctx context.Context, namespace string, name 
 		}
 	}
 	return rbResList, nil
+}
+
+func (s *RbacpController) CreateOrUpdateRolebing(ctx context.Context, reqParam *rbac.RoleBindingRequest) error {
+	if reqParam.Namespace == "" {
+		rbK8sReq := &rbacv1.ClusterRoleBinding{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      reqParam.Name,
+				Namespace: reqParam.Namespace,
+				Labels:    maputils.ToMap(reqParam.Labels),
+			},
+			Subjects: func(saList []rbac.ServiceAccount) []rbacv1.Subject {
+				subjects := make([]rbacv1.Subject, len(saList))
+				for index, item := range saList {
+					subjects[index] = rbacv1.Subject{
+						Name:      item.Name,
+						Kind:      "User",
+						Namespace: item.Namespace,
+					}
+				}
+				return subjects
+			}(reqParam.Subjects),
+			RoleRef: rbacv1.RoleRef{
+				Name:     reqParam.RoleRef,
+				APIGroup: "rbac.authorization.k8s.io",
+				Kind:     "ClusterRole",
+			},
+		}
+		clusterRbApi := s.KubeConfigSet.RbacV1().ClusterRoleBindings()
+		if cluterRoleSrc, err := clusterRbApi.Get(ctx, reqParam.Name, metav1.GetOptions{}); err != nil {
+			_, err = clusterRbApi.Create(ctx, rbK8sReq, metav1.CreateOptions{})
+			if err != nil {
+				return err
+			}
+		} else {
+			cluterRoleSrc.ObjectMeta.Labels = rbK8sReq.Labels
+			cluterRoleSrc.Subjects = rbK8sReq.Subjects
+			cluterRoleSrc.RoleRef = rbK8sReq.RoleRef
+			_, err = clusterRbApi.Update(ctx, cluterRoleSrc, metav1.UpdateOptions{})
+			if err != nil {
+				return err
+			}
+		}
+	} else {
+		rbK8sReq := &rbacv1.RoleBinding{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      reqParam.Name,
+				Namespace: reqParam.Namespace,
+				Labels:    maputils.ToMap(reqParam.Labels),
+			},
+			Subjects: func(saList []rbac.ServiceAccount) []rbacv1.Subject {
+				subjects := make([]rbacv1.Subject, len(saList))
+				for index, item := range saList {
+					subjects[index] = rbacv1.Subject{
+						Name:      item.Name,
+						Kind:      "User",
+						Namespace: item.Namespace,
+					}
+				}
+				return subjects
+			}(reqParam.Subjects),
+			RoleRef: rbacv1.RoleRef{
+				Name:     reqParam.RoleRef,
+				APIGroup: "rbac.authorization.k8s.io",
+				Kind:     "Role",
+			},
+		}
+		rbApi := s.KubeConfigSet.RbacV1().RoleBindings(rbK8sReq.Namespace)
+		if rbK8sSrc, err := rbApi.Get(ctx, reqParam.Name, metav1.GetOptions{}); err != nil {
+			_, err = rbApi.Create(ctx, rbK8sReq, metav1.CreateOptions{})
+			if err != nil {
+				return err
+			}
+		} else {
+			rbK8sSrc.ObjectMeta.Labels = rbK8sReq.Labels
+			rbK8sSrc.Subjects = rbK8sReq.Subjects
+			rbK8sSrc.RoleRef = rbK8sReq.RoleRef
+			_, err = rbApi.Update(ctx, rbK8sSrc, metav1.UpdateOptions{})
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }

@@ -20,6 +20,7 @@ type RBACHandler interface {
 	DeleteRoleBingding(c *gin.Context)
 	GetRolbingDetail(c *gin.Context)
 	GetRolbingList(c *gin.Context)
+	CreateOrUpdateRoleBingding(c *gin.Context)
 }
 type rbacHander struct {
 }
@@ -215,13 +216,13 @@ func (h *rbacHander) DeleteRoleBingding(c *gin.Context) {
 }
 
 func (h *rbacHander) GetRolbingDetail(c *gin.Context) {
-	namespace := c.Param("namespace")
-	name := c.Query("name")
+	namespace := c.Query("namespace")
+	name := c.Param("name")
 
 	rb, err := controller.NewRbacController().GetRbDetail(c.Request.Context(), namespace, name)
 	if err != nil {
 		logger.Error("DeleteRoleBingding error: ", logger.Err(err), middleware.GCtxRequestIDField(c))
-		response.Output(c, ecode.InternalServerError.ToHTTPCode(), err)
+		response.Output(c, ecode.InternalServerError.ToHTTPCode(), err.Error())
 		return
 	}
 	response.Success(c, rb)
@@ -238,4 +239,23 @@ func (h *rbacHander) GetRolbingList(c *gin.Context) {
 		return
 	}
 	response.Success(c, rb)
+}
+
+func (h *rbacHander) CreateOrUpdateRoleBingding(c *gin.Context) {
+
+	reqParam := &rbac.RoleBindingRequest{}
+	err := c.ShouldBind(reqParam)
+	if err != nil {
+		logger.Error("CreateOrUpdateRoleBingding error: ", logger.Err(err), middleware.GCtxRequestIDField(c))
+		response.Output(c, ecode.InternalServerError.ToHTTPCode(), err)
+		return
+	}
+	err = controller.NewRbacController().CreateOrUpdateRolebing(c.Request.Context(), reqParam)
+	if err != nil {
+		logger.Error("CreateOrUpdateRoleBingding error: ", logger.Err(err), middleware.GCtxRequestIDField(c))
+		response.Output(c, ecode.InternalServerError.ToHTTPCode(), err)
+		return
+	}
+
+	response.Success(c)
 }
