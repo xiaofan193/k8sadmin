@@ -63,5 +63,7 @@ func kubernetsResoucesRouter(group *gin.RouterGroup) {
 	g.DELETE("/sc/:name", pv.DeleteSC) // [delete] /api/v1/k8s/sc/:name
 
 	initRBACRouter(g)
+	initSvcRouter(g)
+	initIngressRouter(g)
 
 }
