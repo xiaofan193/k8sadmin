@@ -13,4 +13,9 @@ func initIngressRouter(g *gin.RouterGroup) {
 	g.GET("/ingress/:namespace", svcApiGroup.GetIngressList)
 	g.DELETE("/ingress/:namespace/:name", svcApiGroup.DeleteIngress)
 
+	g.POST("/ingroute", svcApiGroup.CreateOrUpdateIngRoute)
+	g.GET("/ingroute/:namespace/:name", svcApiGroup.GetIngRouteDetail)
+	g.GET("/ingroute/:namespace/middleware", svcApiGroup.GetIngRouteMiddlewareList)
+	g.DELETE("/ingroute/:namespace/:name", svcApiGroup.DeleteIngRoute)
+
 }

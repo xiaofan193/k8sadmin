@@ -2,10 +2,12 @@ package controller
 
 import (
 	"context"
+	"fmt"
 	"github.com/xiaofan193/k8sadmin/internal/pkg/maputils"
 	"github.com/xiaofan193/k8sadmin/internal/types/ingress"
 	"github.com/xiaofan193/k8sadmin/pkg/global"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/json"
 	"k8s.io/client-go/kubernetes"
 	"strings"
 
@@ -112,4 +114,126 @@ func (s *IngressController) GetIngressList(ctx context.Context, namespace string
 
 func (s *IngressController) DetIngress(ctx context.Context, namespace string, name string) error {
 	return s.KubeConfigSet.NetworkingV1().Ingresses(namespace).Delete(ctx, name, metav1.DeleteOptions{})
+}
+
+func (s *IngressController) CreateOrUpdateRoute(ctx context.Context, reqParam *ingress.IngressRouteRequest) error {
+	url := fmt.Sprint("apis/treafix.io/v1alpha1/namespaces/%s/ingressroutes", reqParam.Namespace)
+	ingressRoute := ingress.IngressRoute{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: "traefix.io/v1alpha1",
+			Kind:       "IngressRoute",
+		},
+
+		Metadata: metav1.ObjectMeta{
+			Name:      reqParam.Name,
+			Namespace: reqParam.Namespace,
+			Labels:    maputils.ToMap(reqParam.Labels),
+		},
+		Spec: reqParam.IngressRouteSpec,
+	}
+
+	// 已经存在则更新
+	result, err := json.Marshal(ingressRoute)
+
+	if err != nil {
+		return err
+	}
+
+	raw, err := s.KubeConfigSet.RESTClient().Get().AbsPath(url).Name(reqParam.Name).DoRaw(ctx)
+
+	if err != nil {
+		// 修改
+		var ingressRouteK8s ingress.IngressRoute
+		err = json.Unmarshal(raw, &ingressRouteK8s)
+		if err != nil {
+			return err
+		}
+		// update
+		ingressRouteK8s.Spec = ingressRoute.Spec
+		resultx, errMar := json.Marshal(ingressRouteK8s)
+		if errMar != nil {
+			return errMar
+		}
+		_, err = s.KubeConfigSet.RESTClient().Put().Name(ingressRouteK8s.Metadata.Name).AbsPath(url).Body(resultx).DoRaw(ctx)
+
+	} else {
+		_, err = s.KubeConfigSet.RESTClient().Post().AbsPath(url).Body(result).DoRaw(ctx)
+	}
+	return nil
+}
+
+func (s *IngressController) GetIngRouteDetail(ctx context.Context, namesapce, name string) (*ingress.IngressRouteRes, error) {
+	url := fmt.Sprintf("/apis/traefix.io/v1alpha1/namespace/%s/ingressroutes", namesapce)
+	url = url + "/" + name
+	raw, err := s.KubeConfigSet.RESTClient().Get().AbsPath(url).DoRaw(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var ingRoute ingress.IngressRoute
+	err = json.Unmarshal(raw, &ingRoute)
+	if err != nil {
+		return nil, err
+	}
+
+	ingRouteRes := &ingress.IngressRouteRes{
+		Name:             ingRoute.Metadata.Name,
+		Namespace:        ingRoute.Metadata.Namespace,
+		Labels:           maputils.ToList(ingRoute.Metadata.Labels),
+		IngressRouteSpec: ingRoute.Spec,
+	}
+
+	return ingRouteRes, nil
+}
+
+func (s *IngressController) GetIngRouteList(ctx context.Context, namespace string, keyword string) ([]*ingress.IngressRouteRes, error) {
+	ingressList := make([]*ingress.IngressRouteRes, 0)
+	url := fmt.Sprintf("/apis/traefix.io/v1alpha1/namespace/%s/ingressroutes", namespace)
+	raw, err := s.KubeConfigSet.RESTClient().Get().AbsPath(url).DoRaw(ctx)
+	if err != nil {
+		return ingressList, err
+	}
+	var ingRouteList ingress.IngressRouteList
+	err = json.Unmarshal(raw, &ingRouteList)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, item := range ingRouteList.Items {
+		if !strings.Contains(item.Metadata.Name, keyword) {
+			continue
+		}
+
+		ingressList = append(ingressList, &ingress.IngressRouteRes{
+			Name:      item.Metadata.Name,
+			Namespace: item.Metadata.Namespace,
+			Age:       item.Metadata.CreationTimestamp.Unix(),
+		})
+	}
+
+	return ingressList, nil
+}
+
+func (s *IngressController) GetIngRouteMiddlewareList(ctx context.Context, namespace string) ([]string, error) {
+	url := fmt.Sprintf("/apis/traefix.io/v1alpha1/namespace/%s/middleware", namespace)
+	raw, err := s.KubeConfigSet.RESTClient().Get().AbsPath(url).DoRaw(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var middlewareList ingress.MiddlewareList
+	err = json.Unmarshal(raw, &middlewareList)
+	if err != nil {
+		return nil, err
+	}
+	mwList := make([]string, 0)
+	for _, item := range middlewareList.Items {
+		mwList = append(mwList, item.Metadata.Name)
+	}
+	return mwList, nil
+}
+
+func (s *IngressController) DeleteIngRoute(ctx context.Context, namespace string, name string) error {
+	url := fmt.Sprintf("/apis/traefix.io/v1alpha1/namespace/%s/middlewares/ingressroutes/%s", namespace, name)
+	_, err := s.KubeConfigSet.RESTClient().Delete().AbsPath(url).DoRaw(ctx)
+	return err
+
 }

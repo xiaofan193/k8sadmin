@@ -18,6 +18,12 @@ type IngressHandler interface {
 	GetIngressDetail(c *gin.Context)
 	GetIngressList(c *gin.Context)
 	DeleteIngress(c *gin.Context)
+
+	CreateOrUpdateIngRoute(c *gin.Context)
+	GetIngRouteDetail(c *gin.Context)
+	GetIngRouteList(c *gin.Context)
+	GetIngRouteMiddlewareList(c *gin.Context)
+	DeleteIngRoute(c *gin.Context)
 }
 
 type ingressHandler struct {
@@ -101,4 +107,90 @@ func (h *ingressHandler) DeleteIngress(c *gin.Context) {
 	}
 
 	response.Success(c)
+}
+
+func (h *ingressHandler) CreateOrUpdateIngRoute(c *gin.Context) {
+	reqParam := &ingress.IngressRouteRequest{}
+	err := c.ShouldBind(reqParam)
+	if err != nil {
+		response.Error(c, ecode.InvalidParams, "namespace  and name 不能为空")
+		return
+	}
+	err = controller.NewIngressController().CreateOrUpdateRoute(c.Request.Context(), reqParam)
+	if err != nil {
+		logger.Error("Create error", logger.Err(err), logger.Any("reqParam", reqParam), middleware.GCtxRequestIDField(c))
+		response.Output(c, ecode.InternalServerError.ToHTTPCode())
+		return
+	}
+
+	response.Success(c)
+
+}
+
+func (h *ingressHandler) GetIngRouteDetail(c *gin.Context) {
+	namespace := c.Param("namespace")
+	name := c.Param("name")
+	if namespace == "" || name == "" {
+		response.Error(c, ecode.InvalidParams, "namespace  and name 不能为空")
+		return
+	}
+	ingressRoute, err := controller.NewIngressController().GetIngRouteDetail(c.Request.Context(), namespace, name)
+	if err != nil {
+		logger.Error("GetIngRouteDetail error", logger.Err(err), logger.Any("reqParam", name), middleware.GCtxRequestIDField(c))
+		response.Output(c, ecode.InternalServerError.ToHTTPCode())
+		return
+	}
+	res := &ingress.IngressRouteResReply{
+		Data: struct{ IngressRouteRes *ingress.IngressRouteRes }{IngressRouteRes: ingressRoute},
+	}
+	response.Success(c, res)
+}
+
+func (h *ingressHandler) GetIngRouteList(c *gin.Context) {
+	namespace := c.Param("namespace")
+	keyword := c.Query("keyword")
+	if namespace == "" {
+		response.Error(c, ecode.InvalidParams, "namespace 不能为空")
+		return
+	}
+
+	ingressRouteList, err := controller.NewIngressController().GetIngRouteList(c.Request.Context(), namespace, keyword)
+	if err != nil {
+		logger.Error("GetIngRouteDetail error", logger.Err(err), logger.Any("reqParam", namespace), middleware.GCtxRequestIDField(c))
+		response.Output(c, ecode.InternalServerError.ToHTTPCode())
+		return
+	}
+
+	res := ingress.IngressRouteResListReply{
+		Data: struct{ Data []*ingress.IngressRouteRes }{Data: ingressRouteList},
+	}
+	response.Success(c, res)
+}
+
+func (h *ingressHandler) GetIngRouteMiddlewareList(c *gin.Context) {
+	namespace := c.Param("namespace")
+	list, err := controller.NewIngressController().GetIngRouteMiddlewareList(c.Request.Context(), namespace)
+	if err != nil {
+		logger.Error("GetIngRouteDetail error", logger.Err(err), logger.Any("reqParam", namespace), middleware.GCtxRequestIDField(c))
+		response.Output(c, ecode.InternalServerError.ToHTTPCode())
+		return
+	}
+
+	res := ingress.IngressRouteMiddlewareListReply{
+		Data: struct{ Data []string }{Data: list},
+	}
+	response.Success(c, res)
+}
+
+func (h *ingressHandler) DeleteIngRoute(c *gin.Context) {
+	namespace := c.Param("namespace")
+	name := c.Param("name")
+
+	err := controller.NewIngressController().DeleteIngRoute(c.Request.Context(), namespace, name)
+	if err != nil {
+		logger.Error("DeleteIngRoute error", logger.Err(err), logger.Any("reqParam", namespace), middleware.GCtxRequestIDField(c))
+		response.Output(c, ecode.InternalServerError.ToHTTPCode())
+		return
+	}
+	response.Success(c, true)
 }
