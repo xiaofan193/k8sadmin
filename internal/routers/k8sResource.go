@@ -65,5 +65,6 @@ func kubernetsResoucesRouter(group *gin.RouterGroup) {
 	initRBACRouter(g)
 	initSvcRouter(g)
 	initIngressRouter(g)
+	initDeploymentRouter(g)
 
 }
