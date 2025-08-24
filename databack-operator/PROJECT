@@ -1,0 +1,15 @@
+domain: operator.kubeimooc.com
+layout:
+- go.kubebuilder.io/v3
+projectName: databack-operator
+repo: kubeimooc.com/operator-databackup
+resources:
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: operator.kubeimooc.com
+  kind: Databack
+  path: kubeimooc.com/operator-databackup/api/v1beta1
+  version: v1beta1
+version: "3"

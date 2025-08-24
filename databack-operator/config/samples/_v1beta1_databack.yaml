@@ -1,0 +1,19 @@
+apiVersion: operator.kubeimooc.com/v1beta1
+kind: Databack
+metadata:
+  name: databack-sample
+spec:
+  enable: true
+  starTime: "21:06"
+  period: 1
+  origin:
+    host: "192.168.1.16"
+    port: 30306
+    username: "root"
+    password: "123456"
+  destination:
+    endpoint: "192.168.1.16:30900"
+    accessKey: "ZP0ucZuXbVy9Eh6YadZW"
+    accessSecret: "0pEsOwLravZMy6fMUdnZdKNe7i99LkJK4C8OPBk5"
+    bucketName: "mysqldata"
+
